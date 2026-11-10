@@ -1,0 +1,260 @@
+---
+// 初回ロード演出: たくさんのカーソルが部品（テキスト・リンク・画像・線・枠）を
+// 1つずつ作ってページを組み立てる。
+//  - 背景のある箱 … ドラッグで矩形を描く
+//  - 区切り線     … 横にドラッグして引く
+//  - 短いテキスト … 1文字ずつ入力 / または運んでくる
+//  - 画像・その他 … 画面の端からつまんでドラッグ＆ドロップ
+// 手の空いたカーソルはうろうろ・空クリック・置かれた部品をつつく。
+// html.intro は Base.astro の inline script が付与（reduced-motion / 再生済みなら付与しない）。
+// JS が無い・失敗した場合は .intro が付かないので、本文は普通に表示される。
+---
+<style is:global>
+  html.intro [data-build], html.intro [data-build] * { visibility: hidden; }
+  html.intro .drawn, html.intro .built, html.intro .built * { visibility: visible !important; }
+  html.intro .bi-nudge { animation: bi-nudge .3s ease; }
+  @keyframes bi-nudge { 30% { transform: translate(3px, -2px) rotate(-.6deg); } 70% { transform: translate(-2px, 1px); } }
+  .bi-layer { position: fixed; inset: 0; z-index: 50; pointer-events: none; overflow: hidden; }
+  .bi-layer * { visibility: visible !important; }
+  .bi-cursor {
+    position: absolute; left: 0; top: 0; z-index: 3;
+    transition-property: transform; transition-timing-function: cubic-bezier(.5,0,.25,1); will-change: transform;
+  }
+  .bi-cursor svg { width: 16px; height: 16px; display: block; filter: drop-shadow(0 1px 2px rgba(0,0,0,.5)); transition: transform .1s; transform-origin: 2px 2px; }
+  .bi-cursor.grab svg { transform: scale(.8); }
+  .bi-tag { position: absolute; left: 12px; top: 13px; font: 700 9px/1 'IBM Plex Mono', monospace; color: #1f06ac; background: var(--cc); padding: 2px 4px; border-radius: 2px; white-space: nowrap; transition: opacity .3s; }
+  .bi-ghost {
+    position: absolute; left: 0; top: 0; margin: 0 !important; z-index: 2; box-sizing: border-box;
+    outline: 1.5px solid var(--cc); outline-offset: 3px; box-shadow: 0 14px 30px rgba(5,0,60,.45);
+    transition-property: transform; transition-timing-function: cubic-bezier(.5,0,.25,1); will-change: transform;
+  }
+  .bi-ghost.drop { box-shadow: none; transition-duration: .16s !important; }
+  .bi-marquee { position: absolute; z-index: 1; border: 1.5px dashed var(--cc); background: color-mix(in srgb, var(--cc) 12%, transparent);
+    transition: width var(--d) cubic-bezier(.5,0,.25,1), height var(--d) cubic-bezier(.5,0,.25,1); }
+  .bi-sel { outline: 1.5px dashed var(--cc) !important; outline-offset: 3px; }
+  .bi-caret { display: inline-block; width: 2px; height: 1em; margin-left: 1px; background: var(--cc, currentColor); vertical-align: -0.12em; }
+  .bi-spark { position: absolute; width: 0; height: 0; }
+  .bi-spark i { position: absolute; left: -1px; top: -1px; width: 2px; height: 6px; background: var(--cc); border-radius: 1px; transform-origin: 1px 1px; animation: bi-spark .4s ease-out forwards; }
+  @keyframes bi-spark { from { transform: rotate(var(--r)) translateY(3px) scaleY(.4); opacity: 1; } to { transform: rotate(var(--r)) translateY(12px); opacity: 0; } }
+  .bi-bar { position: fixed; z-index: 60; left: 16px; right: 16px; bottom: 16px; display: flex; align-items: center; gap: 12px; pointer-events: auto; font: 700 12px/1 'IBM Plex Mono', monospace; color: #e3ef4f; }
+  .bi-track { flex: 1; height: 2px; background: rgba(227,239,79,.25); }
+  .bi-fill { height: 100%; width: 0; background: #e3ef4f; transition: width .2s; }
+  .bi-skip { font: inherit; color: #1f06ac; background: #e3ef4f; border: 0; padding: 8px 12px; cursor: pointer; }
+</style>
+<script>
+  const root = document.documentElement;
+  if (root.classList.contains('intro')) run();
+
+  function run() {
+    const COLORS = ['#E3EF4F', '#FFFFFF', '#7FE3C4', '#FF9EC7', '#FFC36B', '#9FB8F5', '#C9A7FF', '#8CF06B'];
+    const rand = (a: number, b: number) => a + Math.random() * (b - a);
+    const pick = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)];
+    const W = innerWidth, H = innerHeight;
+    const clampX = (x: number) => Math.min(Math.max(x, 4), W - 20);
+    const clampY = (y: number) => Math.min(Math.max(y, 4), H - 60);
+
+    const sections = [...document.querySelectorAll<HTMLElement>('[data-build]')];
+    const visible = (el: Element) => { const r = el.getBoundingClientRect(); return r.bottom > 0 && r.top < H - 50 && r.width > 0 && r.height > 0; };
+    const hasBg = (el: Element) => { const c = getComputedStyle(el).backgroundColor; return c !== 'rgba(0, 0, 0, 0)' && c !== 'transparent'; };
+    const isInline = (el: Element) => getComputedStyle(el).display.startsWith('inline') && !['IMG', 'BUTTON'].includes(el.tagName);
+
+    // ---- 部品の洗い出し ----
+    type Job = { kind: 'box' | 'line' | 'type' | 'drag'; el: HTMLElement; after: HTMLElement | null; r: DOMRect };
+    const jobs: Job[] = [];
+    const walk = (el: HTMLElement, box: HTMLElement | null) => {
+      if (!visible(el)) return;
+      const r = el.getBoundingClientRect();
+      if (el.tagName === 'HR') return void jobs.push({ kind: 'line', el, after: box, r });
+      const kids = [...el.children] as HTMLElement[];
+      const leaf = el.tagName === 'IMG' || el.tagName === 'BUTTON' || kids.length === 0 || kids.every(isInline);
+      if (leaf) {
+        const txt = (el.textContent || '').trim();
+        const typeable = kids.length === 0 && txt.length > 0 && txt.length <= 28 && Math.random() < 0.6;
+        return void jobs.push({ kind: typeable ? 'type' : 'drag', el, after: box, r });
+      }
+      let nb = box;
+      if (hasBg(el)) { jobs.push({ kind: 'box', el, after: box, r }); nb = el; }
+      kids.forEach((k) => walk(k, nb));
+    };
+    sections.forEach((s) => walk(s, null));
+    const offscreen = sections.flatMap((s) => [s, ...s.querySelectorAll<HTMLElement>('*')]);
+
+    // ---- レイヤー・カーソル ----
+    const layer = document.createElement('div');
+    layer.className = 'bi-layer';
+    layer.setAttribute('aria-hidden', 'true');
+    const N = W < 640 ? 5 : W < 1100 ? 7 : 9;
+    type C = { el: HTMLElement; color: string; x: number; y: number; free: number; busy: boolean };
+    const cursors: C[] = Array.from({ length: N }, (_, i) => {
+      const color = COLORS[i % COLORS.length];
+      const el = document.createElement('div');
+      el.className = 'bi-cursor';
+      el.style.setProperty('--cc', color);
+      el.innerHTML = `<svg viewBox="0 0 16 16"><path d="M1.5 1l12 6.2-5.4 1.3L5.8 14z" fill="${color}" stroke="#1f06ac" stroke-width="1"/></svg><span class="bi-tag">${String.fromCharCode(65 + i)}</span>`;
+      const side = i % 4;
+      const x = side === 0 ? -24 : side === 1 ? W + 24 : rand(0, W);
+      const y = side === 2 ? -24 : side === 3 ? H + 24 : rand(0, H);
+      el.style.transform = `translate(${x}px, ${y}px)`;
+      layer.appendChild(el);
+      return { el, color, x, y, free: 0, busy: false };
+    });
+
+    const bar = document.createElement('div');
+    bar.className = 'bi-bar';
+    bar.innerHTML = `<span role="status" aria-live="polite" class="bi-status">${N} AGENTS · 0/${jobs.length}</span><div class="bi-track"><div class="bi-fill"></div></div><button type="button" class="bi-skip">SKIP ›</button>`;
+    document.body.append(layer, bar);
+    const fill = bar.querySelector<HTMLElement>('.bi-fill')!;
+    const status = bar.querySelector<HTMLElement>('.bi-status')!;
+    bar.querySelector('button')!.addEventListener('click', finish);
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') finish(); };
+    addEventListener('keydown', onKey);
+
+    let done = false, count = 0;
+    const timers: number[] = [];
+    const at = (ms: number, fn: () => void) => { timers.push(window.setTimeout(() => { if (!done) fn(); }, ms)); };
+    const T0 = performance.now();
+    const now = () => performance.now() - T0;
+    const moveTo = (n: HTMLElement, x: number, y: number, ms: number) => { n.style.transitionDuration = ms + 'ms'; n.style.transform = `translate(${x}px, ${y}px)`; };
+    const go = (c: C, x: number, y: number, ms: number) => { c.x = x; c.y = y; moveTo(c.el, x, y, ms); };
+    const press = (c: C, ms = 110) => { c.el.classList.add('grab'); at(ms, () => c.el.classList.remove('grab')); };
+    const spark = (c: C) => {
+      const s = document.createElement('div');
+      s.className = 'bi-spark';
+      s.style.cssText = `left:${c.x + 2}px;top:${c.y + 1}px;--cc:${c.color}`;
+      s.innerHTML = [0, 60, 120, 180, 240, 300].map((r) => `<i style="--r:${r}deg"></i>`).join('');
+      layer.appendChild(s);
+      setTimeout(() => s.remove(), 450);
+    };
+    const doneJob = (el: HTMLElement) => {
+      count++;
+      fill.style.width = Math.round((count / jobs.length) * 100) + '%';
+      status.textContent = `${N} AGENTS · ${count}/${jobs.length}`;
+      placed.push(el);
+    };
+    const placed: HTMLElement[] = [];
+    const restore: (() => void)[] = [];
+
+    // ---- 作業 ----
+    const PROPS = ['font', 'color', 'letterSpacing', 'textTransform', 'textDecoration', 'lineHeight', 'backgroundColor', 'padding', 'border', 'whiteSpace', 'textAlign', 'display', 'objectFit'] as const;
+    function drag(c: C, j: Job, t: number) {
+      const { el, r } = j;
+      const g = el.cloneNode(true) as HTMLElement;
+      g.removeAttribute('id'); g.querySelectorAll('[id]').forEach((n) => n.removeAttribute('id'));
+      const cs = getComputedStyle(el);
+      PROPS.forEach((p) => { (g.style as any)[p] = (cs as any)[p]; });
+      if (g.style.display.startsWith('inline') && el.tagName !== 'IMG') g.style.display = 'block';
+      g.classList.add('bi-ghost');
+      g.style.width = r.width + 'px'; g.style.height = r.height + 'px';
+      g.style.setProperty('--cc', c.color);
+      const sx = r.left + r.width / 2 < W / 2 ? rand(-r.width * 0.4, W * 0.08) : rand(W * 0.7, W - r.width * 0.5);
+      const sy = clampY(r.top + rand(-260, 260));
+      const gx = Math.min(r.width * 0.4, 70), gy = Math.min(r.height * 0.5, 20);
+      const dur = rand(380, 600);
+      at(t, () => { c.busy = true; go(c, clampX(sx + gx), clampY(sy + gy), rand(250, 380)); });
+      at(t + 400, () => {
+        g.style.transform = `translate(${sx}px, ${sy}px) rotate(${rand(-4, 4)}deg)`;
+        layer.appendChild(g);
+        c.el.classList.add('grab');
+        requestAnimationFrame(() => {
+          const ox = rand(-10, 10), oy = rand(-8, 8);
+          moveTo(g, r.left + ox, r.top + oy, dur);
+          go(c, r.left + gx + ox, r.top + gy + oy, dur);
+        });
+      });
+      at(t + 420 + dur, () => { g.classList.add('drop'); g.style.transform = `translate(${r.left}px, ${r.top}px)`; go(c, r.left + gx, r.top + gy, 160); });
+      at(t + 600 + dur, () => { c.el.classList.remove('grab'); el.classList.add('built'); g.remove(); spark(c); doneJob(el); c.busy = false; });
+      return t + 620 + dur;
+    }
+    function type(c: C, j: Job, t: number) {
+      const { el, r } = j;
+      const text = el.textContent || '';
+      const sp = text.length > 14 ? 28 : 45;
+      at(t, () => { c.busy = true; go(c, clampX(r.left + rand(0, Math.min(r.width, 60))), clampY(r.top + r.height / 2), rand(250, 380)); });
+      at(t + 400, () => {
+        press(c); el.style.setProperty('--cc', c.color); el.classList.add('built', 'bi-sel');
+        const caret = document.createElement('span'); caret.className = 'bi-caret';
+        let i = 0;
+        const tick = () => { el.textContent = text.slice(0, ++i); el.appendChild(caret); if (i < text.length) at(sp, tick); };
+        tick();
+        go(c, clampX(r.left + Math.min(r.width, 300) + 6), clampY(r.top + r.height / 2 + 4), text.length * sp);
+      });
+      const end = t + 420 + text.length * sp;
+      at(end, () => { el.textContent = text; el.classList.remove('bi-sel'); doneJob(el); c.busy = false; });
+      restore.push(() => { el.textContent = text; el.classList.remove('bi-sel'); });
+      return end + 20;
+    }
+    function rect(c: C, j: Job, t: number, line: boolean) {
+      const { el, r } = j;
+      const m = document.createElement('div');
+      m.className = 'bi-marquee';
+      const d = line ? rand(380, 520) : rand(500, 700);
+      at(t, () => { c.busy = true; go(c, clampX(r.left), clampY(r.top), rand(250, 380)); });
+      at(t + 400, () => {
+        c.el.classList.add('grab');
+        m.style.cssText = `left:${r.left}px;top:${r.top}px;width:0;height:${line ? Math.max(r.height, 1) : 0}px;--cc:${c.color};--d:${d}ms`;
+        layer.appendChild(m);
+        requestAnimationFrame(() => { m.style.width = r.width + 'px'; m.style.height = Math.max(r.height, 1) + 'px'; });
+        go(c, clampX(r.right), clampY(r.bottom), d);
+      });
+      at(t + 420 + d, () => { c.el.classList.remove('grab'); el.classList.add(line ? 'built' : 'drawn'); m.remove(); spark(c); doneJob(el); c.busy = false; });
+      return t + 440 + d;
+    }
+
+    // ---- 割り当て（空いたカーソルが次々に取る。箱の中身は箱ができてから） ----
+    const endOf = new Map<HTMLElement, number>();
+    jobs.sort((a, b) => (a.after ? 1 : 0) - (b.after ? 1 : 0) || a.r.top - b.r.top + rand(-120, 120));
+    // 箱は先に（中身の依存のため）、ただし箱同士の親子順は保つ
+    jobs.sort((a, b) => (a.kind === 'box' ? 0 : 1) - (b.kind === 'box' ? 0 : 1));
+    let release = 200;
+    for (const j of jobs) {
+      const c = cursors.reduce((a, b) => (b.free < a.free ? b : a));
+      const t = Math.max(c.free, release, j.after ? endOf.get(j.after) ?? 0 : 0);
+      const end = j.kind === 'drag' ? drag(c, j, t) : j.kind === 'type' ? type(c, j, t) : rect(c, j, t, j.kind === 'line');
+      c.free = end;
+      endOf.set(j.el, end);
+      release += rand(40, 110);
+    }
+    const total = Math.max(...cursors.map((c) => c.free)) + 300;
+    at(900, () => layer.querySelectorAll<HTMLElement>('.bi-tag').forEach((tg) => (tg.style.opacity = '0')));
+
+    // ---- 手の空いたカーソルのわちゃわちゃ ----
+    const fidget = (c: C) => {
+      if (done) return;
+      const free = c.free - now();
+      if (!c.busy && free > 350 || (!c.busy && now() > c.free)) {
+        const r = Math.random();
+        if (r < 0.25 && placed.length) {
+          const el = pick(placed), b = el.getBoundingClientRect();
+          go(c, clampX(b.left + rand(0, Math.min(b.width, 200))), clampY(b.top + rand(0, b.height)), rand(220, 380));
+          at(400, () => { if (!c.busy) { press(c); spark(c); el.classList.remove('bi-nudge'); void el.offsetWidth; el.classList.add('bi-nudge'); } });
+        } else if (r < 0.5) {
+          go(c, clampX(c.x + rand(-60, 60)), clampY(c.y + rand(-40, 40)), rand(120, 220));
+          at(240, () => { if (!c.busy) { press(c); spark(c); } });
+        } else {
+          go(c, clampX(c.x + rand(-260, 260)), clampY(c.y + rand(-180, 180)), rand(260, 480));
+        }
+      }
+      at(rand(260, 520), () => fidget(c));
+    };
+    cursors.forEach((c, i) => at(50 + i * 30, () => fidget(c)));
+    at(total, finish);
+
+    function finish() {
+      if (done) return;
+      done = true;
+      timers.forEach(clearTimeout);
+      removeEventListener('keydown', onKey);
+      restore.forEach((f) => f());
+      layer.querySelectorAll('.bi-ghost, .bi-marquee, .bi-spark').forEach((n) => n.remove());
+      offscreen.forEach((s) => s.classList.add('built'));
+      try { sessionStorage.setItem('intro-played', '1'); } catch {}
+      bar.remove();
+      cursors.forEach((c, i) => moveTo(c.el, c.x < W / 2 ? -40 : W + 40, c.y + rand(-80, 80), 380 + (i % 5) * 70));
+      setTimeout(() => {
+        layer.remove();
+        root.classList.remove('intro');
+        offscreen.forEach((s) => s.classList.remove('built', 'drawn', 'bi-nudge'));
+      }, 800);
+    }
+  }
+</script>

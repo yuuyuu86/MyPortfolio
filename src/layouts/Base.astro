@@ -1,0 +1,64 @@
+---
+import '../styles/global.css';
+import { site } from '../data/site';
+import { url } from '../lib/works';
+
+interface Props { title?: string; description?: string; intro?: boolean; current?: 'home' | 'works' }
+const { title, description = site.description, intro = false, current } = Astro.props;
+const fullTitle = title ? `${title} | ${site.title}` : site.title;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta name="theme-color" content="#1F06AC" />
+    <link rel="icon" href={url('favicon.svg')} type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Zen+Kaku+Gothic+New:wght@400;700&display=swap" rel="stylesheet" />
+    {intro && (
+      <script is:inline>
+        (function () {
+          try {
+            var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            var seen = sessionStorage.getItem('intro-played');
+            if (!reduce && !seen) document.documentElement.classList.add('intro');
+          } catch (e) {}
+        })();
+      </script>
+    )}
+  </head>
+  <body>
+    <a class="skip-link jp" href="#main">本文へスキップ</a>
+    <header class="site-header" data-build="1">
+      <div class="wrap">
+        <a class="brand" href={url()} aria-label="YUTA Portfolio トップへ">
+          <b>{site.name}</b><span aria-hidden="true">/</span><span>PORTFOLIO&nbsp;&nbsp;/&nbsp;&nbsp;2026</span>
+        </a>
+        <nav aria-label="メイン">
+          <ul class="nav">
+            <li><a href={url('works/')} aria-current={current === 'works' ? 'page' : undefined}>WORKS</a></li>
+            <li><a href={url('#about')}>ABOUT</a></li>
+            <li><a href={url('#contact')}>CONTACT</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+    <main id="main"><slot /></main>
+    <footer class="site-footer" data-build="7">
+      <div class="wrap label" style="font-weight:400">
+        <span>{site.name}&nbsp;&nbsp;/&nbsp;&nbsp;{site.location}</span>
+        <span>THANKS FOR STOPPING BY.</span>
+      </div>
+    </footer>
+    <slot name="after" />
+  </body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "yuta-portfolio",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro build && astro preview --port 5173",
+    "test": "node --test tests/"
+  },
+  "dependencies": {
+    "astro": "^5.14.0"
+  }
+}

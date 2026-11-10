@@ -1,0 +1,56 @@
+:root {
+  --c-deep: #1f06ac;
+  --c-blue: #0f42c0;
+  --c-sky: #5882e8;
+  --c-lime: #e3ef4f;
+  --f-jp: 'Zen Kaku Gothic New', system-ui, sans-serif;
+  --f-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --gutter: clamp(16px, 5.3vw, 76px);
+  --max: 1288px;
+  color-scheme: dark;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--c-deep);
+  color: var(--c-lime);
+  font-family: var(--f-mono), var(--f-jp);
+  font-size: 1rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+img { max-width: 100%; display: block; }
+a { color: inherit; text-underline-offset: 0.2em; }
+:focus-visible { outline: 3px solid var(--c-lime); outline-offset: 4px; }
+.jp { font-family: var(--f-jp); }
+.mono { font-family: var(--f-mono); }
+.visually-hidden {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+.skip-link {
+  position: absolute; left: 16px; top: -100px; z-index: 100;
+  background: var(--c-lime); color: var(--c-deep); padding: 8px 12px; font-weight: 700;
+}
+.skip-link:focus { top: 16px; }
+
+.wrap { width: 100%; max-width: calc(var(--max) + var(--gutter) * 2); margin: 0 auto; padding: 0 var(--gutter); }
+
+.site-header { padding-top: clamp(24px, 4.4vw, 64px); }
+.site-header .wrap { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+.brand { display: flex; gap: 16px; flex-wrap: wrap; text-decoration: none; }
+.brand b { font-weight: 700; }
+.nav { display: flex; gap: 24px; list-style: none; margin: 0; padding: 0; font-weight: 700; font-size: 0.9375rem; }
+.nav a { text-decoration: none; }
+.nav a:hover, .nav a[aria-current='page'] { text-decoration: underline; }
+
+.label { font-family: var(--f-mono); font-weight: 700; font-size: 1rem; letter-spacing: 0.02em; margin: 0; }
+.rule { border: 0; border-top: 1px solid color-mix(in srgb, var(--c-lime) 45%, transparent); margin: 0; }
+
+.site-footer { padding: clamp(48px, 7vw, 96px) 0 48px; }
+.site-footer .wrap { display: flex; gap: 24px; flex-wrap: wrap; justify-content: space-between; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+}

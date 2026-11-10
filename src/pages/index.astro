@@ -1,0 +1,204 @@
+---
+import Base from '../layouts/Base.astro';
+import BuildIntro from '../components/BuildIntro.astro';
+import { getPublishedWorks, getFeaturedWorks, url } from '../lib/works';
+import { site } from '../data/site';
+
+const all = await getPublishedWorks();
+const featured = await getFeaturedWorks();
+const pad = (n: number) => String(n).padStart(2, '0');
+const first = featured[0];
+const { email, github, x } = site.contact;
+const hasContact = Boolean(email || github || x);
+---
+<Base intro current="home">
+  <section class="hero wrap" aria-labelledby="hero-title">
+    <div class="hero-text" data-build="2">
+      <p class="label">DESIGN&nbsp;&nbsp;×&nbsp;&nbsp;CODE&nbsp;&nbsp;×&nbsp;&nbsp;CURIOSITY</p>
+      <h1 id="hero-title" class="jp" data-type><span>アイデアを、</span><span>動くかたちに。</span></h1>
+      <p class="jp lead">デザインと開発を行き来しながら、<br />人や暮らしに届く体験をつくっています。</p>
+    </div>
+
+    {first && (
+      <figure class="preview" data-build="3" data-draw aria-label="選択中の作品プレビュー">
+        <div class="preview-head">
+          <span class="label"><span data-p="num">01</span>&nbsp;&nbsp;/&nbsp;&nbsp;SELECTED WORK</span>
+          {featured.length > 1 && (
+            <div class="preview-tabs" role="group" aria-label="プレビューする作品を選択">
+              {featured.map((w, i) => (
+                <button type="button" data-select={i} aria-pressed={i === 0 ? 'true' : 'false'} aria-label={`${w.data.title} をプレビュー`}>{pad(i + 1)}</button>
+              ))}
+            </div>
+          )}
+        </div>
+        <a class="preview-img" href={url(`works/${first.id}/`)} data-p="link" tabindex="-1" aria-hidden="true">
+          <img src={url(first.data.cover)} alt="" data-p="img" width="500" height="300" />
+        </a>
+        <figcaption class="preview-foot">
+          <span class="label" data-p="title">{first.data.title}</span>
+          <span class="label meta" data-p="cat">{first.data.category}</span>
+        </figcaption>
+      </figure>
+    )}
+  </section>
+
+  <section class="works wrap" aria-labelledby="works-title" data-build="4">
+    <div class="works-head">
+      <h2 id="works-title" class="label">SELECTED WORKS</h2>
+      {featured.length > 0 && <span class="label meta">01 — {pad(featured.length)}</span>}
+    </div>
+    <hr class="rule" />
+    {featured.length === 0 ? (
+      <p class="jp empty">作品を準備中です</p>
+    ) : (
+      <ol class="work-list">
+        {featured.map((w, i) => (
+          <li>
+            <a
+              class="work-row"
+              href={url(`works/${w.id}/`)}
+              data-index={i}
+              data-title={w.data.title}
+              data-cat={w.data.category}
+              data-img={url(w.data.cover)}
+              data-href={url(`works/${w.id}/`)}
+            >
+              <span class="num">{pad(i + 1)}</span>
+              <span class="details">
+                <span class="name">{w.data.title}</span>
+                <span class="meta">{w.data.category}</span>
+              </span>
+              <span class="arrow" aria-hidden="true">↗</span>
+            </a>
+            <hr class="rule" />
+          </li>
+        ))}
+      </ol>
+    )}
+    <p class="all-link jp"><a href={url('works/')}>すべての作品を見る <span class="mono">({all.length})</span>&nbsp;&nbsp;<span aria-hidden="true">↗</span></a></p>
+  </section>
+
+  <section id="about" class="about wrap" aria-labelledby="about-title" data-build="5">
+    <h2 id="about-title" class="label">A LITTLE ABOUT ME</h2>
+    <p class="jp about-lead">考えて、つくって、試してみる。<br />ひとつずつ形にして、使う人に届ける。</p>
+    <div class="jp about-body">
+      <p>アイデアを考えるところから、デザインや開発、実際に使える形にするところまで、一つひとつ手を動かして取り組んでいます。</p>
+      <p>使う人の気持ちを想像しながら、まずは小さくつくって試す。そんな試行錯誤を大切にしています。ゲームやアプリ、ものづくりなど、興味のあることに幅広く挑戦しています。</p>
+    </div>
+    <ul class="skills label" aria-label="得意分野">
+      <li>PRODUCT DESIGN</li><li>FRONTEND</li><li>PROTOTYPING</li>
+    </ul>
+  </section>
+
+  <section id="contact" class="contact wrap" aria-labelledby="contact-title" data-build="6">
+    <hr class="rule" />
+    <div class="contact-grid">
+      <div>
+        <h2 id="contact-title" class="contact-title">CONTACT</h2>
+        <p class="jp">制作のご相談・お問い合わせ</p>
+        {hasContact ? (
+          <ul class="contact-list label">
+            {email && <li><a href={`mailto:${email}`}>EMAIL&nbsp;&nbsp;/&nbsp;&nbsp;{email}</a></li>}
+            {github && <li><a href={github} rel="me noopener">GITHUB&nbsp;&nbsp;/&nbsp;&nbsp;{github.replace(/^https?:\/\//, '')}<span class="visually-hidden">（GitHub プロフィール、外部サイト）</span></a></li>}
+            {x && <li><a href={x} rel="me noopener">X&nbsp;&nbsp;/&nbsp;&nbsp;{x.replace(/^https?:\/\/(www\.)?/, '')}<span class="visually-hidden">（X プロフィール、外部サイト）</span></a></li>}
+          </ul>
+        ) : (
+          <p class="jp muted">連絡先は準備中です。</p>
+        )}
+      </div>
+      {x && (
+        <a class="x-card" href={x} rel="noopener">
+          <span class="x-head"><span aria-hidden="true" class="x-logo">𝕏</span><span class="label">PROFILE</span></span>
+          <span class="label">{site.name}&nbsp;&nbsp;&nbsp;@{x.split('/').filter(Boolean).pop()}</span>
+          <span class="label">VIEW PROFILE&nbsp;&nbsp;↗<span class="visually-hidden">（X プロフィール、外部サイト）</span></span>
+        </a>
+      )}
+    </div>
+  </section>
+
+  <BuildIntro slot="after" />
+</Base>
+
+<style>
+  .hero { display: grid; grid-template-columns: 1fr minmax(0, 500px); gap: 48px; align-items: start; padding-top: clamp(56px, 9vw, 128px); }
+  h1 span { display: block; white-space: nowrap; }
+  .hero-text { display: flex; flex-direction: column; gap: 20px; }
+  h1 { font-size: clamp( 2rem, 4.6vw, 3.75rem); line-height: 1.3; margin: 0; font-weight: 700; }
+  .lead { font-size: clamp(1rem, 1.4vw, 1.1875rem); margin: 0; line-height: 1.9; }
+
+  .preview { margin: 0; background: var(--c-blue); }
+  .preview-head, .preview-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 20px; flex-wrap: wrap; }
+  .preview-tabs { display: flex; gap: 4px; }
+  .preview-tabs button {
+    font: 700 0.8125rem var(--f-mono); color: var(--c-lime); background: transparent;
+    border: 1px solid color-mix(in srgb, var(--c-lime) 50%, transparent); padding: 6px 10px; min-width: 40px; min-height: 32px; cursor: pointer;
+  }
+  .preview-tabs button[aria-pressed='true'] { background: var(--c-lime); color: var(--c-blue); }
+  .preview-img { display: block; aspect-ratio: 500 / 236; background: var(--c-blue); }
+  .preview-img img { width: 100%; height: 100%; object-fit: contain; padding: 16px; transition: opacity .2s; }
+  .meta { font-weight: 400; }
+
+  .works { padding-top: clamp(72px, 9vw, 120px); }
+  .works-head { display: flex; justify-content: space-between; padding-bottom: 15px; }
+  .work-list { list-style: none; margin: 0; padding: 0; }
+  .work-row { display: grid; grid-template-columns: auto 1fr auto; gap: 17px; align-items: start; padding: 15px 0; text-decoration: none; }
+  .work-row .num { font-weight: 700; padding-top: 4px; }
+  .work-row .details { display: flex; flex-direction: column; gap: 4px; }
+  .work-row .name { font-weight: 700; font-size: 1.3125rem; }
+  .work-row:hover .name, .work-row:focus-visible .name, .work-row.is-active .name { text-decoration: underline; text-underline-offset: 0.2em; }
+  .work-row .arrow { transition: transform .2s; }
+  .work-row:hover .arrow { transform: translate(3px, -3px); }
+  .all-link { margin: 28px 0 0; font-weight: 700; font-size: 1.125rem; }
+  .all-link a { text-decoration: none; }
+  .all-link a:hover { text-decoration: underline; }
+  .empty { padding: 24px 0; }
+
+  .about { padding-top: clamp(80px, 10vw, 140px); display: flex; flex-direction: column; gap: 18px; }
+  .about-lead { font-size: 1.3125rem; font-weight: 700; margin: 0; line-height: 1.7; }
+  .about-body { max-width: 50em; font-size: 1.0625rem; line-height: 1.9; }
+  .about-body p { margin: 0 0 1em; }
+  .skills { display: flex; flex-wrap: wrap; gap: 8px 28px; list-style: none; padding: 0; margin: 0; font-weight: 400; }
+
+  .contact { padding-top: clamp(80px, 10vw, 140px); }
+  .contact-grid { display: flex; justify-content: space-between; gap: 32px; flex-wrap: wrap; padding-top: 24px; }
+  .contact-title { font: 700 1.875rem var(--f-mono); margin: 0 0 8px; }
+  .contact-list { list-style: none; padding: 0; margin: 16px 0 0; display: flex; flex-direction: column; gap: 10px; }
+  .contact-list a { text-decoration: none; }
+  .contact-list a:hover { text-decoration: underline; }
+  .muted { opacity: .85; }
+  .x-card { background: var(--c-blue); padding: 22px; display: flex; flex-direction: column; gap: 14px; width: min(100%, 475px); text-decoration: none; }
+  .x-head { display: flex; justify-content: space-between; align-items: center; }
+  .x-logo { font-size: 1.5rem; font-weight: 700; }
+
+  @media (max-width: 860px) {
+    .hero { grid-template-columns: 1fr; }
+    .preview { max-width: 560px; }
+  }
+</style>
+
+<script>
+  const preview = document.querySelector<HTMLElement>('.preview');
+  const rows = [...document.querySelectorAll<HTMLAnchorElement>('.work-row')];
+  if (preview && rows.length) {
+    const q = (k: string) => preview.querySelector<HTMLElement>(`[data-p="${k}"]`)!;
+    const tabs = [...preview.querySelectorAll<HTMLButtonElement>('[data-select]')];
+    const select = (i: number) => {
+      const r = rows[i];
+      if (!r) return;
+      q('num').textContent = String(i + 1).padStart(2, '0');
+      q('title').textContent = r.dataset.title!;
+      q('cat').textContent = r.dataset.cat!;
+      (q('img') as HTMLImageElement).src = r.dataset.img!;
+      (q('link') as HTMLAnchorElement).href = r.dataset.href!;
+      rows.forEach((x, j) => x.classList.toggle('is-active', j === i));
+      tabs.forEach((t, j) => t.setAttribute('aria-pressed', String(j === i)));
+    };
+    rows.forEach((r, i) => {
+      r.addEventListener('mouseenter', () => select(i));
+      r.addEventListener('focus', () => select(i));
+    });
+    tabs.forEach((t, i) => t.addEventListener('click', () => select(i)));
+    // 画像を先読みして切り替えのちらつきを防ぐ
+    rows.forEach((r) => { const im = new Image(); im.src = r.dataset.img!; });
+  }
+</script>

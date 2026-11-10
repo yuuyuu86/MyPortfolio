@@ -1,0 +1,70 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getPublishedWorks, url } from '../../lib/works';
+
+const works = await getPublishedWorks();
+const pad = (n: number) => String(n).padStart(2, '0');
+---
+<Base title="Works" description="YUTA がこれまでに制作した作品の一覧。" current="works">
+  <div class="wrap page">
+    <header class="intro-block">
+      <p class="label">SELECTED PROJECTS{works.length > 0 && <>&nbsp;&nbsp;/&nbsp;&nbsp;01—{pad(works.length)}</>}</p>
+      <h1>WORKS</h1>
+      <p class="jp">アイデアを形にした、これまでの制作。</p>
+    </header>
+
+    {works.length === 0 ? (
+      <p class="jp empty">作品を準備中です</p>
+    ) : (
+      <ul class="grid">
+        {works.map((w, i) => (
+          <li class="card">
+            <a class="visual" href={url(`works/${w.id}/`)} tabindex="-1" aria-hidden="true">
+              <span class="num">{pad(i + 1)}</span>
+              <span class="img"><img src={url(w.data.cover)} alt="" loading={i < 3 ? 'eager' : 'lazy'} width="413" height="318" /></span>
+            </a>
+            <div class="desc">
+              <p class="label cat">{w.data.category}</p>
+              <h2><a href={url(`works/${w.id}/`)}>{w.data.title}</a></h2>
+              <p class="jp">{w.data.summary}</p>
+            </div>
+          </li>
+        ))}
+      </ul>
+    )}
+
+    <section class="cta" aria-labelledby="cta-title">
+      <h2 id="cta-title">LET'S MAKE SOMETHING.</h2>
+      <p class="jp">プロジェクトについて、お気軽にご相談ください。</p>
+      <p class="label"><a href={url()}>← BACK TO HOME</a></p>
+    </section>
+  </div>
+</Base>
+
+<style>
+  .page { padding-top: 45px; }
+  .intro-block { display: flex; flex-direction: column; gap: 14px; margin-bottom: 45px; }
+  .intro-block .label { font-size: .875rem; }
+  h1 { font: 700 clamp(3rem, 6vw, 4.5rem)/1.2 var(--f-mono); margin: 0; }
+  .intro-block p { margin: 0; }
+  .grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 45px 24px; }
+  .visual { display: flex; flex-direction: column; background: var(--c-blue); text-decoration: none; }
+  .num { font: 700 2.125rem var(--f-mono); padding: 16px 20px; }
+  .img { aspect-ratio: 413 / 318; display: block; }
+  .img img { width: 100%; height: 100%; object-fit: contain; padding: 8px 20px 20px; transition: transform .3s; }
+  .card:hover .img img { transform: scale(1.03); }
+  .desc { display: flex; flex-direction: column; gap: 8px; padding-top: 14px; }
+  .desc p { margin: 0; }
+  .cat { font-size: .8125rem; }
+  h2 { font: 700 1.6875rem/1.3 var(--f-mono); margin: 0; }
+  h2 a { text-decoration: none; }
+  h2 a:hover, .card:hover h2 a { text-decoration: underline; }
+  .empty { padding: 48px 0; font-size: 1.125rem; }
+  .cta { padding-top: 64px; margin-top: 64px; border-top: 1px solid color-mix(in srgb, var(--c-lime) 45%, transparent); display: flex; flex-direction: column; gap: 16px; }
+  .cta h2 { font-size: clamp(1.5rem, 3vw, 2rem); }
+  .cta p { margin: 0; }
+  .cta a { text-decoration: none; }
+  .cta a:hover { text-decoration: underline; }
+  @media (max-width: 1024px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+</style>

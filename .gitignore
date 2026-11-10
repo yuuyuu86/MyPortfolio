@@ -1,0 +1,6 @@
+node_modules/
+dist/
+.DS_Store
+.astro/
+.claude/settings.local.json
+作品棚卸し.md
