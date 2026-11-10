@@ -6,7 +6,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro build && astro preview --port 5173",
-    "test": "node --test tests/"
+    "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {
     "astro": "^5.14.0"
