@@ -3,7 +3,7 @@
   --c-blue: #0f42c0;
   --c-sky: #5882e8;
   --c-lime: #e3ef4f;
-  --f-jp: 'Zen Kaku Gothic New', system-ui, sans-serif;
+  --f-jp: 'Noto Sans JP', system-ui, sans-serif;
   --f-mono: 'IBM Plex Mono', ui-monospace, monospace;
   --gutter: clamp(16px, 5.3vw, 76px);
   --max: 1288px;
@@ -24,7 +24,7 @@ body {
 img { max-width: 100%; display: block; }
 a { color: inherit; text-underline-offset: 0.2em; }
 :focus-visible { outline: 3px solid var(--c-lime); outline-offset: 4px; }
-.jp { font-family: var(--f-jp); }
+.jp { font-family: var(--f-jp); font-feature-settings: 'palt'; letter-spacing: .035em; }
 .mono { font-family: var(--f-mono); }
 .visually-hidden {
   position: absolute; width: 1px; height: 1px; overflow: hidden;
