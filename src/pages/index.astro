@@ -7,36 +7,31 @@ import { site } from '../data/site';
 const all = await getPublishedWorks();
 const featured = await getFeaturedWorks();
 const pad = (n: number) => String(n).padStart(2, '0');
-const first = featured[0] ?? all[0];
+const heroWorks = ['marugoto-fes', 'paperbrowser', 'tokarium'].map((id) => all.find((w) => w.id === id)).filter((w): w is NonNullable<typeof w> => Boolean(w));
+const first = heroWorks[0] ?? all[0];
 // ヒーローのプレビューは公開作品すべてからランダムに切り替える
-const pool = all.map((w, i) => ({ id: w.id, no: pad(i + 1), title: w.data.title, cat: w.data.category, img: url(w.data.cover), href: url(`works/${w.id}/`) }));
+const pool = all.map((w, i) => ({ id: w.id, no: pad(i + 1), title: w.data.title, cat: w.data.category, img: url(w.id === 'marugoto-fes' ? '/images/works/marugoto-fes/screen-01.webp' : w.data.cover), href: url(`works/${w.id}/`) }));
 const firstNo = pad(all.findIndex((w) => w.id === first?.id) + 1);
 const { email, github, x, xName } = site.contact;
 const hasContact = Boolean(email || github || x);
 ---
 <Base intro current="home">
   <section class="hero wrap" aria-labelledby="hero-title">
-    <div class="dreamscape" aria-hidden="true">
-      <div class="aurora aurora-one"></div>
-      <div class="aurora aurora-two"></div>
-      <div class="light-orbit"></div>
-      {Array.from({ length: 48 }, (_, i) => (
-        <i class="stardust" style={`--x:${(i * 37.71 + 11) % 100}%;--y:${(i * 23.43 + 7) % 100}%;--delay:${-i * 0.73}s;--size:${i % 5 === 0 ? 3 : 1.5}px`} />
-      ))}
-    </div>
+    <div class="dreamscape" aria-hidden="true"><div class="light-orbit"></div></div>
     <div class="hero-text" data-build="2">
-      <p class="label">DESIGN&nbsp;&nbsp;×&nbsp;&nbsp;CODE&nbsp;&nbsp;×&nbsp;&nbsp;CURIOSITY</p>
-      <h1 id="hero-title" class="jp" data-type><span>アイデアを、</span><span>動くかたちに。</span></h1>
+      <p class="label">Yuta / Design &amp; Development</p>
+      <h1 id="hero-title" class="jp" data-type><span>アプリとゲームを、</span><span>使えるかたちに</span></h1>
       <p class="jp lead">デザインと開発を行き来しながら、<br />人や暮らしに届く体験をつくっています。</p>
+      <div class="hero-actions jp"><a class="primary-link" href={url('works/')}>作品を見る <span aria-hidden="true">↗</span></a><a href={url('#about')}>私について</a></div>
     </div>
 
     {first && (
-      <figure class="preview" data-build="3" data-draw aria-label="作品プレビュー（一定時間ごとに切り替わります）">
+      <figure class="preview" data-current={first.id} data-build="3" data-draw aria-label="作品プレビュー">
         <script type="application/json" id="preview-pool" set:html={JSON.stringify(pool)} />
         <div class="preview-head">
           <span class="label jp">作品プレビュー <span class="mono" data-p="num">{firstNo}</span></span>
           <div class="preview-tabs" role="group" aria-label="プレビューの操作">
-            {featured.length > 1 && featured.map((w, i) => (
+            {heroWorks.length > 1 && heroWorks.map((w, i) => (
               <button type="button" data-select={w.id} aria-pressed={w.id === first.id ? 'true' : 'false'} aria-label={`${w.data.title} をプレビュー`}>{w.data.title.replace('まるごと祭公式アプリ2026', 'まるごと祭アプリ')}</button>
             ))}
             {pool.length > 1 && (
@@ -45,10 +40,12 @@ const hasContact = Boolean(email || github || x);
           </div>
         </div>
         <a class="preview-img" href={url(`works/${first.id}/`)} data-p="link" tabindex="-1" aria-hidden="true">
-          <img src={url(first.data.cover)} alt="" data-p="img" width="500" height="300" />
+          <img class="companion" src={url('/images/works/marugoto-fes/screen-02.webp')} alt="" width="1206" height="2622" />
+          <img src={url(first.id === 'marugoto-fes' ? '/images/works/marugoto-fes/screen-01.webp' : first.data.cover)} alt="" data-p="img" width="500" height="300" />
+          <img class="companion" src={url('/images/works/marugoto-fes/screen-03.webp')} alt="" width="1206" height="2622" />
         </a>
         <figcaption class="preview-foot">
-          <span class="label" data-p="title" aria-live="polite">{first.data.title}</span>
+          <a class="label jp" data-p="title" href={url(`works/${first.id}/`)} aria-live="polite">{first.data.title}</a>
           <span class="label meta" data-p="cat">{first.data.category}</span>
         </figcaption>
       </figure>
@@ -57,7 +54,7 @@ const hasContact = Boolean(email || github || x);
 
   <section class="works wrap" aria-labelledby="works-title" data-build="4">
     <div class="works-head">
-      <h2 id="works-title" class="label">SELECTED WORKS</h2>
+      <h2 id="works-title" class="label">制作したもの</h2>
       {featured.length > 0 && <span class="label meta">01 — {pad(featured.length)}</span>}
     </div>
     <hr class="rule" />
@@ -76,10 +73,10 @@ const hasContact = Boolean(email || github || x);
               data-img={url(w.data.cover)}
               data-href={url(`works/${w.id}/`)}
             >
-              <span class="num">{pad(i + 1)}</span>
+              <span class="work-thumb"><img src={url(w.id === 'marugoto-fes' ? '/images/works/marugoto-fes/screen-01.webp' : w.data.cover)} alt="" loading="lazy" /></span>
               <span class="details">
                 <span class="name">{w.data.title}</span>
-                <span class="meta">{w.data.category}</span>
+                <span class="work-summary jp">{w.data.summary}</span><span class="meta">{w.data.category}</span>
               </span>
               <span class="arrow" aria-hidden="true">↗</span>
             </a>
@@ -92,7 +89,7 @@ const hasContact = Boolean(email || github || x);
   </section>
 
   <section id="about" class="about wrap" aria-labelledby="about-title" data-build="5">
-    <h2 id="about-title" class="label">A LITTLE ABOUT ME</h2>
+    <h2 id="about-title" class="label">私について</h2>
     <p class="jp about-lead">考えて、つくって、試してみる。<br />ひとつずつ形にして、使う人に届ける。</p>
     <div class="jp about-body">
       <p>アイデアを考えるところから、デザインや開発、実際に使える形にするところまで、一つひとつ手を動かして取り組んでいます。</p>
@@ -107,7 +104,7 @@ const hasContact = Boolean(email || github || x);
     <hr class="rule" />
     <div class="contact-grid">
       <div>
-        <h2 id="contact-title" class="contact-title">CONTACT</h2>
+        <h2 id="contact-title" class="contact-title jp">一緒につくりませんか</h2>
         <p class="jp">制作のご相談・お問い合わせ</p>
         {hasContact ? (
           <ul class="contact-list label">
@@ -121,7 +118,7 @@ const hasContact = Boolean(email || github || x);
       </div>
       {x && (
         <aside class="x-card" aria-label="Xの投稿プレビュー">
-          <div class="x-head"><span aria-hidden="true" class="x-logo">𝕏</span><span class="label">LATEST POSTS</span></div>
+          <div class="x-head"><span aria-hidden="true" class="x-logo">𝕏</span><span class="label">Xでの発信</span></div>
           <div class="x-profile">
             <span class="x-avatar" aria-hidden="true">Y</span>
             <span class="x-identity"><strong>{xName}</strong><span class="label">@{x.split('/').filter(Boolean).pop()}</span></span>
@@ -138,96 +135,98 @@ const hasContact = Boolean(email || github || x);
 </Base>
 
 <style>
-  .hero {
-    position: relative;
-    isolation: isolate;
-    overflow: hidden;
-    display: grid;
-    width: 100%;
-    max-width: none;
-    margin: 0;
-    min-height: calc(100svh - var(--header-height));
-    grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr);
-    gap: clamp(32px, 5vw, 76px);
-    align-items: center;
-    padding: clamp(48px, 6vw, 88px) max(var(--gutter), calc((100vw - var(--max)) / 2));
-    background: radial-gradient(ellipse at 80% 100%, #0f42c080, transparent 65%), #10065c;
-  }
+  .hero { position: relative; isolation: isolate; overflow: hidden; display: grid; width: 100%; max-width: none; margin: 0; min-height: calc(100svh - var(--header-height)); grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 64px; align-items: center; padding: 64px max(var(--gutter), calc((100vw - var(--max)) / 2)); background: #121064; }
   .hero-text, .preview { position: relative; z-index: 1; }
   .dreamscape { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
-  .dreamscape::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, #10065c90, transparent 75%), linear-gradient(0deg, var(--c-deep), transparent 22%); }
-  .aurora { position: absolute; width: 110%; height: 70%; border-radius: 50%; filter: blur(60px); opacity: .65; will-change: transform; }
-  .aurora-one { top: -40%; left: 10%; background: conic-gradient(from 70deg, transparent 20%, #5882e8 37%, #0f42c0 47%, transparent 65%); animation: aurora-drift 24s ease-in-out infinite alternate; }
-  .aurora-two { bottom: -38%; right: -35%; background: conic-gradient(from 200deg, transparent 10%, #5882e8 28%, #e3ef4f55 34%, #0f42c0 42%, transparent 60%); animation: aurora-drift 30s ease-in-out -12s infinite alternate-reverse; }
-  .light-orbit { position: absolute; width: 110%; height: 90%; right: -42%; top: -20%; border: 1px solid #5882e84d; border-radius: 50%; transform: rotate(-32deg); box-shadow: 0 0 55px #5882e81a, inset 0 0 55px #5882e80d; }
-  .stardust { position: absolute; left: var(--x); top: var(--y); width: var(--size); height: var(--size); border-radius: 50%; background: #d9e6ff; box-shadow: 0 0 10px #5882e8; opacity: .35; animation: stardust-breathe 7s ease-in-out var(--delay) infinite alternate; }
-  @keyframes aurora-drift { from { transform: translate3d(-4%, -3%, 0) rotate(-12deg) scale(.95); } to { transform: translate3d(6%, 8%, 0) rotate(14deg) scale(1.15); } }
-  @keyframes stardust-breathe { from { opacity: .15; transform: translateY(8px); } to { opacity: .7; transform: translateY(-8px); } }
+  .light-orbit { position: absolute; width: 100%; height: 140%; left: 50%; top: -20%; border: 1px solid #f2f3ff12; border-radius: 50%; transform: rotate(-25deg); }
+  .hero-text { display: flex; flex-direction: column; gap: 32px; }
+  .hero-text > .label { color: var(--c-secondary); font-size: .8125rem; }
+  h1 { font-size: clamp(2.25rem, 4.1vw, 4rem); line-height: 1.5; margin: 0; font-weight: 500; letter-spacing: -.035em; }
   h1 span { display: block; white-space: nowrap; }
-  .hero-text { display: flex; flex-direction: column; gap: clamp(20px, 2.4vw, 34px); }
-  h1 { font-size: clamp(2.6rem, 5.6vw, 5.5rem); line-height: 1.32; margin: 0; font-weight: 800; letter-spacing: -.045em; }
-  .lead { font-size: clamp(1rem, 1.4vw, 1.1875rem); font-weight: 400; margin: 0; line-height: 2; }
-
-  .preview { width: 100%; max-width: 700px; justify-self: end; margin: 0; background: #1f06ac88; border: 1px solid #5882e84d; box-shadow: 0 24px 80px #05012e40; }
-  .preview-head, .preview-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 20px; flex-wrap: wrap; }
-  .preview-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
-  .preview-tabs button {
-    font: 700 0.8125rem var(--f-mono); color: var(--c-lime); background: transparent;
-    border: 1px solid color-mix(in srgb, var(--c-lime) 50%, transparent); padding: 6px 10px; min-width: 40px; min-height: 32px; cursor: pointer;
-  }
-  .preview-pause { font-family: var(--f-jp) !important; }
-  .preview-tabs button[aria-pressed="true"]:not(.preview-pause) { background: var(--c-lime); color: var(--c-blue); }
-  .preview-img { display: block; aspect-ratio: 500 / 290; background: var(--c-deep); }
-  .preview-img img { width: 100%; height: 100%; object-fit: contain; padding: 16px; transition: opacity .2s; }
-  .meta { font-weight: 400; }
-
-  .works { padding-top: clamp(72px, 9vw, 120px); }
-  .works-head { display: flex; justify-content: space-between; padding-bottom: 15px; }
+  .lead { font-size: 1.0625rem; margin: 0; color: var(--c-secondary); line-height: 2; }
+  .hero-actions { display: flex; align-items: center; gap: 32px; font-size: .9375rem; }
+  .hero-actions a { text-decoration: none; }
+  .primary-link { display: flex; align-items: center; gap: 40px; min-height: 48px; padding: 12px 20px; background: var(--c-lime); color: #141246; border-radius: 4px; font-weight: 500; }
+  .hero-actions a:hover { text-decoration: underline; }
+  .preview { width: 100%; max-width: 672px; justify-self: end; margin: 0; background: #191775; border: 1px solid var(--c-line); border-radius: 12px; overflow: hidden; }
+  .preview-head, .preview-foot { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 20px 24px; flex-wrap: wrap; }
+  .preview-head > .label { font-size: .75rem; color: var(--c-secondary); }
+  .preview-tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+  .preview-tabs button { font: 400 .75rem var(--f-jp); color: var(--c-secondary); background: transparent; border: 1px solid transparent; border-radius: 4px; padding: 8px; min-height: 36px; cursor: pointer; transition: color .16s, background .16s; }
+  .preview-tabs button:hover { background: #ffffff0c; color: var(--c-text); }
+  .preview-tabs button[aria-pressed="true"]:not(.preview-pause) { background: #ffffff10; color: var(--c-lime); border-color: var(--c-line); }
+  .preview-img { display: block; height: clamp(320px, 42vh, 480px); background: #0e0d48; }
+  .preview-img img { width: 100%; height: 100%; object-fit: contain; padding: 24px; transition: opacity .2s; }
+  .preview-img .companion { display: none; }
+  .preview[data-current="marugoto-fes"] .preview-img { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 24px; }
+  .preview[data-current="marugoto-fes"] .preview-img img { padding: 0; width: auto; max-width: 30%; height: 100%; object-fit: contain; }
+  .preview[data-current="marugoto-fes"] .preview-img .companion { display: block; height: 88%; opacity: .8; }
+  .preview-foot a { text-decoration: none; }
+  .preview-foot a:hover { text-decoration: underline; }
+  .preview-foot .label { font-size: .9375rem; }
+  .preview-foot .meta { font-size: .6875rem; }
+  .meta { color: var(--c-muted); font-weight: 400; font-size: .75rem; }
+  .works, .about, .contact { padding-top: 112px; }
+  .works-head { display: flex; justify-content: space-between; align-items: center; padding-bottom: 24px; }
+  .works-head h2, .about > h2 { font-family: var(--f-jp); font-size: 1rem; font-weight: 500; }
   .work-list { list-style: none; margin: 0; padding: 0; }
-  .work-row { display: grid; grid-template-columns: auto 1fr auto; gap: 17px; align-items: start; padding: 15px 0; text-decoration: none; }
-  .work-row .num { font-weight: 700; padding-top: 4px; }
-  .work-row .details { display: flex; flex-direction: column; gap: 4px; }
-  .work-row .name { font-weight: 700; font-size: 1.3125rem; }
-  .work-row:hover .name, .work-row:focus-visible .name, .work-row.is-active .name { text-decoration: underline; text-underline-offset: 0.2em; }
-  .work-row .arrow { transition: transform .2s; }
-  .work-row:hover .arrow { transform: translate(3px, -3px); }
-  .all-link { margin: 28px 0 0; font-weight: 700; font-size: 1.125rem; }
-  .all-link a { text-decoration: none; }
-  .all-link a:hover { text-decoration: underline; }
+  .work-row { display: grid; grid-template-columns: 160px minmax(0, 1fr) 24px; gap: 32px; align-items: center; padding: 32px 0; text-decoration: none; }
+  .work-thumb { height: 112px; background: var(--c-surface); border-radius: 4px; overflow: hidden; }
+  .work-thumb img { width: 100%; height: 100%; object-fit: contain; padding: 8px; }
+  .work-row .details { display: flex; flex-direction: column; gap: 8px; }
+  .work-row .name { font-family: var(--f-jp); font-weight: 500; font-size: 1.5rem; }
+  .work-summary { font-size: .9375rem; color: var(--c-secondary); }
+  .work-row:hover .name, .work-row:focus-visible .name, .work-row.is-active .name { color: var(--c-lime); }
+  .arrow { color: var(--c-secondary); }
+  .all-link { margin: 32px 0 0; font-weight: 400; font-size: 1rem; }
+  .all-link a { color: var(--c-lime); }
   .empty { padding: 24px 0; }
-
-  .about { padding-top: clamp(80px, 10vw, 140px); display: flex; flex-direction: column; gap: 18px; }
-  .about-lead { font-size: 1.3125rem; font-weight: 700; margin: 0; line-height: 1.7; }
-  .about-body { max-width: 50em; font-size: 1.0625rem; line-height: 1.9; }
-  .about-body p { margin: 0 0 1em; }
-  .skills { display: flex; flex-wrap: wrap; gap: 8px 28px; list-style: none; padding: 0; margin: 0; font-weight: 400; }
-
-  .contact { padding-top: clamp(80px, 10vw, 140px); }
-  .contact-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, 475px); align-items: start; gap: clamp(32px, 7vw, 96px); padding-top: 24px; }
-  .contact-title { font: 700 1.875rem var(--f-mono); margin: 0 0 8px; }
-  .contact-list { list-style: none; padding: 0; margin: 16px 0 0; display: flex; flex-direction: column; gap: 10px; }
+  .about { display: grid; grid-template-columns: 1fr 2fr; gap: 24px 64px; }
+  .about > h2 { grid-row: span 3; padding-top: 8px; }
+  .about-lead { font-size: clamp(1.375rem, 2.4vw, 2rem); font-weight: 400; margin: 0; line-height: 1.8; }
+  .about-body { max-width: 40em; font-size: 1rem; line-height: 2; color: var(--c-secondary); }
+  .about-body p { margin: 0 0 16px; }
+  .skills { display: flex; flex-wrap: wrap; gap: 8px 24px; list-style: none; padding: 0; margin: 0; font-weight: 400; font-size: .6875rem; color: var(--c-muted); }
+  .contact-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, 440px); align-items: start; gap: 64px; padding-top: 48px; }
+  .contact-title { font-size: clamp(1.5rem, 2.5vw, 2rem); font-weight: 400; margin: 0 0 16px; }
+  .contact-grid > div > p { font-size: .9375rem; color: var(--c-secondary); }
+  .contact-list { list-style: none; padding: 0; margin: 32px 0 0; display: flex; flex-direction: column; gap: 16px; font-size: .875rem; font-weight: 400; overflow-wrap: anywhere; }
   .contact-list a { text-decoration: none; }
   .contact-list a:hover { text-decoration: underline; }
-  .muted { opacity: .85; }
-  .x-card { min-width: 0; background: var(--c-blue); padding: 20px; display: flex; flex-direction: column; gap: 14px; width: 100%; }
+  .muted { color: var(--c-muted); }
+  .x-card { min-width: 0; background: var(--c-surface); border: 1px solid var(--c-line); border-radius: 8px; padding: 24px; display: flex; flex-direction: column; gap: 16px; width: 100%; }
   .x-head { display: flex; justify-content: space-between; align-items: center; }
-  .x-logo { font-size: 1.5rem; font-weight: 700; }
+  .x-head .label { font-family: var(--f-jp); font-size: .75rem; color: var(--c-muted); }
+  .x-logo { font-size: 1.25rem; }
   .x-profile { display: flex; align-items: center; gap: 12px; min-width: 0; }
-  .x-avatar { display: grid; place-items: center; flex: 0 0 42px; width: 42px; height: 42px; border-radius: 50%; background: var(--c-lime); color: var(--c-blue); font: 700 1.1rem var(--f-mono); }
-  .x-identity { display: flex; flex-direction: column; min-width: 0; gap: 2px; }
-  .x-identity strong { font-size: 1rem; }
-  .x-identity .label { opacity: .82; }
-  .x-follow { margin-left: auto; white-space: nowrap; text-decoration: none; }
+  .x-avatar { display: grid; place-items: center; flex: 0 0 40px; width: 40px; height: 40px; border-radius: 50%; background: #ffffff10; font-size: 1rem; }
+  .x-identity { display: flex; flex-direction: column; min-width: 0; gap: 4px; }
+  .x-identity strong { font-size: .9375rem; font-weight: 500; }
+  .x-identity .label { font-size: .6875rem; color: var(--c-secondary); }
+  .x-follow { margin-left: auto; white-space: nowrap; text-decoration: none; font-size: .6875rem; }
   .x-follow:hover { text-decoration: underline; }
-  .twitter-timeline { color: var(--c-lime); }
-
+  .twitter-timeline { color: var(--c-secondary); font-size: .875rem; }
   @media (max-width: 860px) {
-    .hero { grid-template-columns: 1fr; grid-template-rows: auto auto; align-content: center; gap: 44px; padding-top: 56px; padding-bottom: 52px; }
-    .hero-text { gap: 22px; }
-    h1 { font-size: clamp(2.6rem, 8vw, 4.25rem); }
-    .preview { justify-self: start; max-width: 640px; }
-    .contact-grid { grid-template-columns: 1fr; }
+    .hero { grid-template-columns: 1fr; align-content: center; gap: 40px; padding-block: 48px; }
+    .hero-text { gap: 24px; }
+    h1 { font-size: clamp(2rem, 5.6vw, 3.5rem); }
+    .preview { justify-self: start; max-width: 672px; }
+    .preview-img { height: 360px; }
+    .about { grid-template-columns: 1fr; gap: 24px; }
+    .about > h2 { grid-row: auto; }
+    .contact-grid { grid-template-columns: 1fr; gap: 40px; }
     .x-card { max-width: 560px; }
+    .works, .about, .contact { padding-top: 80px; }
+  }
+  @media (max-width: 480px) {
+    .work-row { grid-template-columns: 80px minmax(0, 1fr) 16px; gap: 16px; padding-block: 24px; }
+    .work-thumb { height: 88px; }
+    .work-row .name { font-size: 1.125rem; }
+    .work-summary { font-size: .8125rem; }
+    .preview-head, .preview-foot { padding: 16px; }
+    .preview-tabs { gap: 4px; }
+    .preview-img { height: 320px; }
+    .preview-foot .meta { display: none; }
   }
 </style>
 
@@ -246,15 +245,17 @@ const hasContact = Boolean(email || github || x);
     const img = q('img') as HTMLImageElement;
     const INTERVAL = 4500;
     let current = pool.find((p) => p.title === q('title').textContent)?.id ?? pool[0]?.id;
-    let userPaused = false, hold = false, timer = 0;
+    let userPaused = true, hold = false, timer = 0;
 
     const show = (id: string) => {
       const p = pool.find((x) => x.id === id);
       if (!p) return;
       current = id;
+      preview.dataset.current = id;
       const apply = () => {
         q('num').textContent = p.no;
         q('title').textContent = p.title;
+        (q('title') as HTMLAnchorElement).href = p.href;
         q('cat').textContent = p.cat;
         (q('link') as HTMLAnchorElement).href = p.href;
         img.src = p.img;
@@ -266,7 +267,7 @@ const hasContact = Boolean(email || github || x);
       tabs.forEach((t) => t.setAttribute('aria-pressed', String(t.dataset.select === id)));
     };
     const next = () => {
-      const others = pool.filter((p) => p.id !== current);
+      const others = pool.filter((p) => p.id !== current && ['marugoto-fes', 'paperbrowser', 'tokarium'].includes(p.id));
       if (others.length) show(others[Math.floor(Math.random() * others.length)].id);
     };
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -283,7 +284,7 @@ const hasContact = Boolean(email || github || x);
       }
       schedule();
     };
-    if (reduce) setPaused(true);
+    setPaused(true);
 
     rows.forEach((r) => {
       const enter = () => { hold = true; show(r.dataset.id!); schedule(); };

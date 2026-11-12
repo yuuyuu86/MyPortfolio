@@ -1,8 +1,8 @@
 ---
 title: まるごと祭公式アプリ2026
 summary: 会場マップやタイムスケジュール、予約チケットをまとめた、まるごと祭2026の来場者向け公式アプリ。
-cover: /images/works/marugoto-fes/cover.svg
-alt: App Storeで公開中の公式アプリ画面を3枚並べた紹介ビジュアル。
+cover: /images/works/marugoto-fes/screen-01.webp
+alt: App Storeで公開中のまるごと祭公式アプリ2026のホーム画面
 category: IOS / EVENT
 status: published
 featured: true
