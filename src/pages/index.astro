@@ -130,13 +130,25 @@ const hasContact = Boolean(email || github || x);
 </Base>
 
 <style>
-  .hero { display: grid; grid-template-columns: 1fr minmax(0, 500px); gap: 48px; align-items: start; padding-top: clamp(56px, 9vw, 128px); }
+  .hero {
+    position: relative;
+    display: grid;
+    width: 100vw;
+    max-width: none;
+    margin: 0 0 0 calc(50% - 50vw);
+    min-height: calc(100svh - 90px);
+    grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr);
+    gap: clamp(32px, 5vw, 76px);
+    align-items: center;
+    padding: clamp(48px, 6vw, 88px) max(var(--gutter), calc((100vw - var(--max)) / 2));
+    background: var(--c-blue);
+  }
   h1 span { display: block; white-space: nowrap; }
-  .hero-text { display: flex; flex-direction: column; gap: 20px; }
-  h1 { font-size: clamp( 2rem, 4.6vw, 3.75rem); line-height: 1.3; margin: 0; font-weight: 700; }
+  .hero-text { display: flex; flex-direction: column; gap: clamp(20px, 2.4vw, 34px); }
+  h1 { font-size: clamp(2.6rem, 5.6vw, 5.5rem); line-height: 1.22; margin: 0; font-weight: 700; letter-spacing: -.035em; }
   .lead { font-size: clamp(1rem, 1.4vw, 1.1875rem); margin: 0; line-height: 1.9; }
 
-  .preview { margin: 0; background: var(--c-blue); }
+  .preview { width: 100%; max-width: 700px; justify-self: end; margin: 0; background: var(--c-deep); }
   .preview-head, .preview-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 20px; flex-wrap: wrap; }
   .preview-tabs { display: flex; gap: 4px; }
   .preview-tabs button {
@@ -145,7 +157,7 @@ const hasContact = Boolean(email || github || x);
   }
   .preview-pause { font-size: .625rem !important; letter-spacing: -.1em; }
   .preview-tabs button[aria-pressed="true"]:not(.preview-pause) { background: var(--c-lime); color: var(--c-blue); }
-  .preview-img { display: block; aspect-ratio: 500 / 236; background: var(--c-blue); }
+  .preview-img { display: block; aspect-ratio: 500 / 290; background: var(--c-deep); }
   .preview-img img { width: 100%; height: 100%; object-fit: contain; padding: 16px; transition: opacity .2s; }
   .meta { font-weight: 400; }
 
@@ -190,8 +202,10 @@ const hasContact = Boolean(email || github || x);
   .twitter-timeline { color: var(--c-lime); }
 
   @media (max-width: 860px) {
-    .hero { grid-template-columns: 1fr; }
-    .preview { max-width: 560px; }
+    .hero { min-height: calc(100svh - 76px); grid-template-columns: 1fr; grid-template-rows: auto auto; align-content: center; gap: 44px; padding-top: 56px; padding-bottom: 52px; }
+    .hero-text { gap: 22px; }
+    h1 { font-size: clamp(2.6rem, 8vw, 4.25rem); }
+    .preview { justify-self: start; max-width: 640px; }
     .contact-grid { grid-template-columns: 1fr; }
     .x-card { max-width: 560px; }
   }
