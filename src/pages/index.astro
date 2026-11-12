@@ -16,6 +16,14 @@ const hasContact = Boolean(email || github || x);
 ---
 <Base intro current="home">
   <section class="hero wrap" aria-labelledby="hero-title">
+    <div class="dreamscape" aria-hidden="true">
+      <div class="aurora aurora-one"></div>
+      <div class="aurora aurora-two"></div>
+      <div class="light-orbit"></div>
+      {Array.from({ length: 48 }, (_, i) => (
+        <i class="stardust" style={`--x:${(i * 37.71 + 11) % 100}%;--y:${(i * 23.43 + 7) % 100}%;--delay:${-i * 0.73}s;--size:${i % 5 === 0 ? 3 : 1.5}px`} />
+      ))}
+    </div>
     <div class="hero-text" data-build="2">
       <p class="label">DESIGN&nbsp;&nbsp;×&nbsp;&nbsp;CODE&nbsp;&nbsp;×&nbsp;&nbsp;CURIOSITY</p>
       <h1 id="hero-title" class="jp" data-type><span>アイデアを、</span><span>動くかたちに。</span></h1>
@@ -132,6 +140,8 @@ const hasContact = Boolean(email || github || x);
 <style>
   .hero {
     position: relative;
+    isolation: isolate;
+    overflow: hidden;
     display: grid;
     width: 100vw;
     max-width: none;
@@ -141,14 +151,24 @@ const hasContact = Boolean(email || github || x);
     gap: clamp(32px, 5vw, 76px);
     align-items: center;
     padding: clamp(48px, 6vw, 88px) max(var(--gutter), calc((100vw - var(--max)) / 2));
-    background: var(--c-blue);
+    background: radial-gradient(ellipse at 80% 100%, #0f42c080, transparent 65%), #10065c;
   }
+  .hero-text, .preview { position: relative; z-index: 1; }
+  .dreamscape { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+  .dreamscape::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, #10065c90, transparent 75%), linear-gradient(0deg, var(--c-deep), transparent 22%); }
+  .aurora { position: absolute; width: 110%; height: 70%; border-radius: 50%; filter: blur(60px); opacity: .65; will-change: transform; }
+  .aurora-one { top: -40%; left: 10%; background: conic-gradient(from 70deg, transparent 20%, #5882e8 37%, #0f42c0 47%, transparent 65%); animation: aurora-drift 24s ease-in-out infinite alternate; }
+  .aurora-two { bottom: -38%; right: -35%; background: conic-gradient(from 200deg, transparent 10%, #5882e8 28%, #e3ef4f55 34%, #0f42c0 42%, transparent 60%); animation: aurora-drift 30s ease-in-out -12s infinite alternate-reverse; }
+  .light-orbit { position: absolute; width: 110%; height: 90%; right: -42%; top: -20%; border: 1px solid #5882e84d; border-radius: 50%; transform: rotate(-32deg); box-shadow: 0 0 55px #5882e81a, inset 0 0 55px #5882e80d; }
+  .stardust { position: absolute; left: var(--x); top: var(--y); width: var(--size); height: var(--size); border-radius: 50%; background: #d9e6ff; box-shadow: 0 0 10px #5882e8; opacity: .35; animation: stardust-breathe 7s ease-in-out var(--delay) infinite alternate; }
+  @keyframes aurora-drift { from { transform: translate3d(-4%, -3%, 0) rotate(-12deg) scale(.95); } to { transform: translate3d(6%, 8%, 0) rotate(14deg) scale(1.15); } }
+  @keyframes stardust-breathe { from { opacity: .15; transform: translateY(8px); } to { opacity: .7; transform: translateY(-8px); } }
   h1 span { display: block; white-space: nowrap; }
   .hero-text { display: flex; flex-direction: column; gap: clamp(20px, 2.4vw, 34px); }
   h1 { font-size: clamp(2.6rem, 5.6vw, 5.5rem); line-height: 1.22; margin: 0; font-weight: 700; letter-spacing: -.035em; }
   .lead { font-size: clamp(1rem, 1.4vw, 1.1875rem); margin: 0; line-height: 1.9; }
 
-  .preview { width: 100%; max-width: 700px; justify-self: end; margin: 0; background: var(--c-deep); }
+  .preview { width: 100%; max-width: 700px; justify-self: end; margin: 0; background: #1f06ac88; border: 1px solid #5882e84d; box-shadow: 0 24px 80px #05012e40; }
   .preview-head, .preview-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 20px; flex-wrap: wrap; }
   .preview-tabs { display: flex; gap: 4px; }
   .preview-tabs button {
