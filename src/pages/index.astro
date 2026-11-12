@@ -34,13 +34,13 @@ const hasContact = Boolean(email || github || x);
       <figure class="preview" data-build="3" data-draw aria-label="作品プレビュー（一定時間ごとに切り替わります）">
         <script type="application/json" id="preview-pool" set:html={JSON.stringify(pool)} />
         <div class="preview-head">
-          <span class="label"><span data-p="num">{firstNo}</span>&nbsp;&nbsp;/&nbsp;&nbsp;WORKS</span>
+          <span class="label jp">作品プレビュー <span class="mono" data-p="num">{firstNo}</span></span>
           <div class="preview-tabs" role="group" aria-label="プレビューの操作">
             {featured.length > 1 && featured.map((w, i) => (
-              <button type="button" data-select={w.id} aria-pressed={w.id === first.id ? 'true' : 'false'} aria-label={`${w.data.title} をプレビュー`}>{pad(i + 1)}</button>
+              <button type="button" data-select={w.id} aria-pressed={w.id === first.id ? 'true' : 'false'} aria-label={`${w.data.title} をプレビュー`}>{w.data.title.replace('まるごと祭公式アプリ2026', 'まるごと祭アプリ')}</button>
             ))}
             {pool.length > 1 && (
-              <button type="button" class="preview-pause" aria-pressed="false" aria-label="自動切り替えを停止">❚❚</button>
+              <button type="button" class="preview-pause" aria-pressed="false" aria-label="自動切り替えを停止">一時停止</button>
             )}
           </div>
         </div>
@@ -143,10 +143,10 @@ const hasContact = Boolean(email || github || x);
     isolation: isolate;
     overflow: hidden;
     display: grid;
-    width: 100vw;
+    width: 100%;
     max-width: none;
-    margin: 0 0 0 calc(50% - 50vw);
-    min-height: calc(100svh - 90px);
+    margin: 0;
+    min-height: calc(100svh - var(--header-height));
     grid-template-columns: minmax(0, .92fr) minmax(0, 1.08fr);
     gap: clamp(32px, 5vw, 76px);
     align-items: center;
@@ -170,12 +170,12 @@ const hasContact = Boolean(email || github || x);
 
   .preview { width: 100%; max-width: 700px; justify-self: end; margin: 0; background: #1f06ac88; border: 1px solid #5882e84d; box-shadow: 0 24px 80px #05012e40; }
   .preview-head, .preview-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px 20px; flex-wrap: wrap; }
-  .preview-tabs { display: flex; gap: 4px; }
+  .preview-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
   .preview-tabs button {
     font: 700 0.8125rem var(--f-mono); color: var(--c-lime); background: transparent;
     border: 1px solid color-mix(in srgb, var(--c-lime) 50%, transparent); padding: 6px 10px; min-width: 40px; min-height: 32px; cursor: pointer;
   }
-  .preview-pause { font-size: .625rem !important; letter-spacing: -.1em; }
+  .preview-pause { font-family: var(--f-jp) !important; }
   .preview-tabs button[aria-pressed="true"]:not(.preview-pause) { background: var(--c-lime); color: var(--c-blue); }
   .preview-img { display: block; aspect-ratio: 500 / 290; background: var(--c-deep); }
   .preview-img img { width: 100%; height: 100%; object-fit: contain; padding: 16px; transition: opacity .2s; }
@@ -222,7 +222,7 @@ const hasContact = Boolean(email || github || x);
   .twitter-timeline { color: var(--c-lime); }
 
   @media (max-width: 860px) {
-    .hero { min-height: calc(100svh - 76px); grid-template-columns: 1fr; grid-template-rows: auto auto; align-content: center; gap: 44px; padding-top: 56px; padding-bottom: 52px; }
+    .hero { grid-template-columns: 1fr; grid-template-rows: auto auto; align-content: center; gap: 44px; padding-top: 56px; padding-bottom: 52px; }
     .hero-text { gap: 22px; }
     h1 { font-size: clamp(2.6rem, 8vw, 4.25rem); }
     .preview { justify-self: start; max-width: 640px; }
@@ -279,7 +279,7 @@ const hasContact = Boolean(email || github || x);
       if (pauseBtn) {
         pauseBtn.setAttribute('aria-pressed', String(v));
         pauseBtn.setAttribute('aria-label', v ? '自動切り替えを再開' : '自動切り替えを停止');
-        pauseBtn.textContent = v ? '▶' : '❚❚';
+        pauseBtn.textContent = v ? '再生' : '一時停止';
       }
       schedule();
     };

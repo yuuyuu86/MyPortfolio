@@ -7,6 +7,7 @@
   --f-mono: 'IBM Plex Mono', ui-monospace, monospace;
   --gutter: clamp(16px, 5.3vw, 76px);
   --max: 1288px;
+  --header-height: 88px;
   color-scheme: dark;
 }
 *, *::before, *::after { box-sizing: border-box; }
@@ -37,13 +38,21 @@ a { color: inherit; text-underline-offset: 0.2em; }
 
 .wrap { width: 100%; max-width: calc(var(--max) + var(--gutter) * 2); margin: 0 auto; padding: 0 var(--gutter); }
 
-.site-header { padding-top: clamp(24px, 4.4vw, 64px); }
-.site-header .wrap { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; }
-.brand { display: flex; gap: 16px; flex-wrap: wrap; text-decoration: none; }
+.site-header { background: #10065c; }
+.site-header .wrap { min-height: var(--header-height); display: flex; justify-content: space-between; align-items: center; gap: 24px; padding-block: 16px; }
+.brand { display: flex; align-items: center; gap: 16px; text-decoration: none; white-space: nowrap; }
 .brand b { font-weight: 700; }
 .nav { display: flex; gap: 24px; list-style: none; margin: 0; padding: 0; font-weight: 700; font-size: 0.9375rem; }
-.nav a { text-decoration: none; }
+.nav a { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 48px; padding: 4px 8px; text-decoration: none; gap: 1px; white-space: nowrap; }
+.nav small { font-size: .625rem; font-weight: 400; letter-spacing: .08em; opacity: .75; }
 .nav a:hover, .nav a[aria-current='page'] { text-decoration: underline; }
+
+@media (max-width: 860px) {
+  :root { --header-height: 128px; }
+  .site-header .wrap { flex-direction: column; justify-content: center; gap: 8px; padding-block: 12px; }
+  .brand { gap: 12px; font-size: .8125rem; }
+  .nav { gap: 16px; font-size: .875rem; }
+}
 
 .label { font-family: var(--f-mono); font-weight: 700; font-size: 1rem; letter-spacing: 0.02em; margin: 0; }
 .rule { border: 0; border-top: 1px solid color-mix(in srgb, var(--c-lime) 45%, transparent); margin: 0; }

@@ -45,9 +45,9 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
         </a>
         <nav aria-label="メイン">
           <ul class="nav">
-            <li><a href={url('works/')} aria-current={current === 'works' ? 'page' : undefined}>WORKS</a></li>
-            <li><a href={url('#about')}>ABOUT</a></li>
-            <li><a href={url('#contact')}>CONTACT</a></li>
+            <li><a href={url('works/')} aria-current={current === 'works' ? 'page' : undefined}><span class="jp">作品一覧</span><small>WORKS</small></a></li>
+            <li><a href={url('#about')}><span class="jp">私について</span><small>ABOUT</small></a></li>
+            <li><a href={url('#contact')}><span class="jp">お問い合わせ</span><small>CONTACT</small></a></li>
           </ul>
         </nav>
       </div>
