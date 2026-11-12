@@ -11,7 +11,7 @@ const first = featured[0] ?? all[0];
 // ヒーローのプレビューは公開作品すべてからランダムに切り替える
 const pool = all.map((w, i) => ({ id: w.id, no: pad(i + 1), title: w.data.title, cat: w.data.category, img: url(w.data.cover), href: url(`works/${w.id}/`) }));
 const firstNo = pad(all.findIndex((w) => w.id === first?.id) + 1);
-const { email, github, x } = site.contact;
+const { email, github, x, xName } = site.contact;
 const hasContact = Boolean(email || github || x);
 ---
 <Base intro current="home">
@@ -112,11 +112,16 @@ const hasContact = Boolean(email || github || x);
         )}
       </div>
       {x && (
-        <a class="x-card" href={x} rel="noopener">
-          <span class="x-head"><span aria-hidden="true" class="x-logo">𝕏</span><span class="label">PROFILE</span></span>
-          <span class="label">{site.name}&nbsp;&nbsp;&nbsp;@{x.split('/').filter(Boolean).pop()}</span>
-          <span class="label">VIEW PROFILE&nbsp;&nbsp;↗<span class="visually-hidden">（X プロフィール、外部サイト）</span></span>
-        </a>
+        <aside class="x-card" aria-label="Xの投稿プレビュー">
+          <div class="x-head"><span aria-hidden="true" class="x-logo">𝕏</span><span class="label">LATEST POSTS</span></div>
+          <div class="x-profile">
+            <span class="x-avatar" aria-hidden="true">Y</span>
+            <span class="x-identity"><strong>{xName}</strong><span class="label">@{x.split('/').filter(Boolean).pop()}</span></span>
+            <a class="x-follow label" href={x} rel="me noopener">PROFILE ↗<span class="visually-hidden">（Xプロフィール、外部サイト）</span></a>
+          </div>
+          <a class="twitter-timeline" data-height="380" data-theme="dark" data-chrome="noheader nofooter noborders transparent" href={x}>@{x.split('/').filter(Boolean).pop()} のポストを読み込む</a>
+          <noscript><a class="label" href={x}>Xで投稿を見る ↗</a></noscript>
+        </aside>
       )}
     </div>
   </section>
@@ -166,21 +171,33 @@ const hasContact = Boolean(email || github || x);
   .skills { display: flex; flex-wrap: wrap; gap: 8px 28px; list-style: none; padding: 0; margin: 0; font-weight: 400; }
 
   .contact { padding-top: clamp(80px, 10vw, 140px); }
-  .contact-grid { display: flex; justify-content: space-between; gap: 32px; flex-wrap: wrap; padding-top: 24px; }
+  .contact-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(320px, 475px); align-items: start; gap: clamp(32px, 7vw, 96px); padding-top: 24px; }
   .contact-title { font: 700 1.875rem var(--f-mono); margin: 0 0 8px; }
   .contact-list { list-style: none; padding: 0; margin: 16px 0 0; display: flex; flex-direction: column; gap: 10px; }
   .contact-list a { text-decoration: none; }
   .contact-list a:hover { text-decoration: underline; }
   .muted { opacity: .85; }
-  .x-card { background: var(--c-blue); padding: 22px; display: flex; flex-direction: column; gap: 14px; width: min(100%, 475px); text-decoration: none; }
+  .x-card { min-width: 0; background: var(--c-blue); padding: 20px; display: flex; flex-direction: column; gap: 14px; width: 100%; }
   .x-head { display: flex; justify-content: space-between; align-items: center; }
   .x-logo { font-size: 1.5rem; font-weight: 700; }
+  .x-profile { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .x-avatar { display: grid; place-items: center; flex: 0 0 42px; width: 42px; height: 42px; border-radius: 50%; background: var(--c-lime); color: var(--c-blue); font: 700 1.1rem var(--f-mono); }
+  .x-identity { display: flex; flex-direction: column; min-width: 0; gap: 2px; }
+  .x-identity strong { font-size: 1rem; }
+  .x-identity .label { opacity: .82; }
+  .x-follow { margin-left: auto; white-space: nowrap; text-decoration: none; }
+  .x-follow:hover { text-decoration: underline; }
+  .twitter-timeline { color: var(--c-lime); }
 
   @media (max-width: 860px) {
     .hero { grid-template-columns: 1fr; }
     .preview { max-width: 560px; }
+    .contact-grid { grid-template-columns: 1fr; }
+    .x-card { max-width: 560px; }
   }
 </style>
+
+<script is:inline async src="https://platform.x.com/widgets.js" charset="utf-8"></script>
 
 <script>
   type P = { id: string; no: string; title: string; cat: string; img: string; href: string };

@@ -6,8 +6,9 @@ export const site = {
   description: 'デザインと開発を行き来しながら、人や暮らしに届く体験をつくる YUTA のポートフォリオ。',
   location: 'TOKYO, JAPAN',
   contact: {
-    email: '', // 例: 'you@example.com'
+    email: 'yuuyuu86game@gmail.com',
     github: '', // 例: 'https://github.com/yourname'
-    x: '', // 例: 'https://x.com/yourname'
+    x: 'https://x.com/YuuYuu3736895',
+    xName: 'Yutaaaa',
   },
 };
