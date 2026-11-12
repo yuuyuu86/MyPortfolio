@@ -19,3 +19,6 @@
 - Motion: 常時動く粒子と光を削除。作品切替は初期停止し、任意で再生可能。ユーザー指定の初回エージェント演出は維持
 
 Unslop workflow by Damir Sokolovsky (@heydamir), https://heydamir.design/unslop / CC BY 4.0.
+
+## ASCII workshop / subsequent user direction
+ユーザー指定で雰囲気を大きく変更。青黒い端末色、ASCIIのYUTAロゴ、文字の地形、ロボットと端末の挿絵、破線の罫線を採用。作品プレビューは元画像をブラウザ内でASCII文字列へ変換し、実画面へ切り替え可能。画像の加工ファイルは生成せず、元の作品画像を保持。装飾アートは読み上げ対象外。

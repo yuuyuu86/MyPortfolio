@@ -14,32 +14,41 @@ const pool = all.map((w, i) => ({ id: w.id, no: pad(i + 1), title: w.data.title,
 const firstNo = pad(all.findIndex((w) => w.id === first?.id) + 1);
 const { email, github, x, xName } = site.contact;
 const hasContact = Boolean(email || github || x);
+const asciiLogo = String.raw` __   __  _   _  _____   _
+ \ \ / / | | | ||_   _| / \
+  \ V /  | | | |  | |  / _ \
+   | |   | |_| |  | | / ___ \
+   |_|    \___/   |_|/_/   \_\ `;
+const terrain = Array.from({length: 18}, (_, y) => Array.from({length: 100}, (_, x) => {
+ const r = 7 + Math.sin(x / 11) * 3 + Math.cos(x / 23) * 3;
+ return Math.abs(y-r)<.55 ? '_' : y>r ? (x+y*3)%12===0 ? '/' : (x-y*3+120)%12===0 ? ':' : y%4===0 ? '.' : ' ' : ' ';
+}).join('')).join('\n');
 ---
 <Base intro current="home">
   <section class="hero wrap" aria-labelledby="hero-title">
-    <div class="dreamscape" aria-hidden="true"><div class="light-orbit"></div></div>
+    <pre class="ascii-terrain" aria-hidden="true">{terrain}</pre>
     <div class="hero-text" data-build="2">
-      <p class="label">Yuta / Design &amp; Development</p>
+      <p class="label terminal-line">[ YUTA / independent creator ]</p><pre class="ascii-logo" aria-hidden="true">{asciiLogo}</pre>
       <h1 id="hero-title" class="jp" data-type><span>アプリとゲームを、</span><span>使えるかたちに</span></h1>
       <p class="jp lead">デザインと開発を行き来しながら、<br />人や暮らしに届く体験をつくっています。</p>
       <div class="hero-actions jp"><a class="primary-link" href={url('works/')}>作品を見る <span aria-hidden="true">↗</span></a><a href={url('#about')}>私について</a></div>
     </div>
 
     {first && (
-      <figure class="preview" data-current={first.id} data-build="3" data-draw aria-label="作品プレビュー">
+      <figure class="preview" data-current={first.id} data-view="ascii" data-build="3" data-draw aria-label="作品プレビュー">
         <script type="application/json" id="preview-pool" set:html={JSON.stringify(pool)} />
-        <div class="preview-head">
+        <div class="ascii-toolbar"><span aria-hidden="true">+-- project.render --+</span><button type="button" class="view-toggle" aria-pressed="true">実画面に切り替え</button></div><div class="preview-head">
           <span class="label jp">作品プレビュー <span class="mono" data-p="num">{firstNo}</span></span>
           <div class="preview-tabs" role="group" aria-label="プレビューの操作">
             {heroWorks.length > 1 && heroWorks.map((w, i) => (
               <button type="button" data-select={w.id} aria-pressed={w.id === first.id ? 'true' : 'false'} aria-label={`${w.data.title} をプレビュー`}>{w.data.title.replace('まるごと祭公式アプリ2026', 'まるごと祭アプリ')}</button>
             ))}
             {pool.length > 1 && (
-              <button type="button" class="preview-pause" aria-pressed="false" aria-label="自動切り替えを停止">一時停止</button>
+              <button type="button" class="preview-pause" aria-pressed="true" aria-label="自動切り替えを再開">再生</button>
             )}
           </div>
         </div>
-        <a class="preview-img" href={url(`works/${first.id}/`)} data-p="link" tabindex="-1" aria-hidden="true">
+        <div class="ascii-output" aria-hidden="true"><pre data-ascii></pre><noscript><img src={url(first.data.cover)} alt={first.data.alt} /></noscript></div><a class="preview-img" href={url(`works/${first.id}/`)} data-p="link" tabindex="-1" aria-hidden="true">
           <img class="companion" src={url('/images/works/marugoto-fes/screen-02.webp')} alt="" width="1206" height="2622" />
           <img src={url(first.id === 'marugoto-fes' ? '/images/works/marugoto-fes/screen-01.webp' : first.data.cover)} alt="" data-p="img" width="500" height="300" />
           <img class="companion" src={url('/images/works/marugoto-fes/screen-03.webp')} alt="" width="1206" height="2622" />
@@ -54,7 +63,7 @@ const hasContact = Boolean(email || github || x);
 
   <section class="works wrap" aria-labelledby="works-title" data-build="4">
     <div class="works-head">
-      <h2 id="works-title" class="label">制作したもの</h2>
+      <h2 id="works-title" class="label">[01] 制作したもの <span aria-hidden="true">--------+</span></h2>
       {featured.length > 0 && <span class="label meta">01 — {pad(featured.length)}</span>}
     </div>
     <hr class="rule" />
@@ -89,7 +98,12 @@ const hasContact = Boolean(email || github || x);
   </section>
 
   <section id="about" class="about wrap" aria-labelledby="about-title" data-build="5">
-    <h2 id="about-title" class="label">私について</h2>
+    <h2 id="about-title" class="label">[02] 私について<pre class="ascii-small" aria-hidden="true">{String.raw`   .--------.
+   |  o  o  |
+   |   __   |
+   +---++---+
+   /|  ||  |\
+  /_|__||__|_\ `}</pre></h2>
     <p class="jp about-lead">考えて、つくって、試してみる。<br />ひとつずつ形にして、使う人に届ける。</p>
     <div class="jp about-body">
       <p>アイデアを考えるところから、デザインや開発、実際に使える形にするところまで、一つひとつ手を動かして取り組んでいます。</p>
@@ -104,7 +118,11 @@ const hasContact = Boolean(email || github || x);
     <hr class="rule" />
     <div class="contact-grid">
       <div>
-        <h2 id="contact-title" class="contact-title jp">一緒につくりませんか</h2>
+        <pre class="ascii-small" aria-hidden="true">{String.raw`  ___________________
+ /__________________/|
+ |  hello, world_   ||
+ |__________________|/
+      /________\ `}</pre><h2 id="contact-title" class="contact-title jp">一緒につくりませんか</h2>
         <p class="jp">制作のご相談・お問い合わせ</p>
         {hasContact ? (
           <ul class="contact-list label">
@@ -135,7 +153,7 @@ const hasContact = Boolean(email || github || x);
 </Base>
 
 <style>
-  .hero { position: relative; isolation: isolate; overflow: hidden; display: grid; width: 100%; max-width: none; margin: 0; min-height: calc(100svh - var(--header-height)); grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 64px; align-items: center; padding: 64px max(var(--gutter), calc((100vw - var(--max)) / 2)); background: #121064; }
+  .hero { position: relative; isolation: isolate; overflow: hidden; display: grid; width: 100%; max-width: none; margin: 0; min-height: calc(100svh - var(--header-height)); grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); gap: 64px; align-items: center; padding: 64px max(var(--gutter), calc((100vw - var(--max)) / 2)); background: var(--c-deep); }
   .hero-text, .preview { position: relative; z-index: 1; }
   .dreamscape { position: absolute; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
   .light-orbit { position: absolute; width: 100%; height: 140%; left: 50%; top: -20%; border: 1px solid #f2f3ff12; border-radius: 50%; transform: rotate(-25deg); }
@@ -148,14 +166,14 @@ const hasContact = Boolean(email || github || x);
   .hero-actions a { text-decoration: none; }
   .primary-link { display: flex; align-items: center; gap: 40px; min-height: 48px; padding: 12px 20px; background: var(--c-lime); color: #141246; border-radius: 4px; font-weight: 500; }
   .hero-actions a:hover { text-decoration: underline; }
-  .preview { width: 100%; max-width: 672px; justify-self: end; margin: 0; background: #191775; border: 1px solid var(--c-line); border-radius: 12px; overflow: hidden; }
+  .preview { width: 100%; max-width: 672px; justify-self: end; margin: 0; background: var(--c-surface); border: 1px solid var(--c-line); border-radius: 0; overflow: hidden; }
   .preview-head, .preview-foot { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 20px 24px; flex-wrap: wrap; }
   .preview-head > .label { font-size: .75rem; color: var(--c-secondary); }
   .preview-tabs { display: flex; flex-wrap: wrap; gap: 8px; }
   .preview-tabs button { font: 400 .75rem var(--f-jp); color: var(--c-secondary); background: transparent; border: 1px solid transparent; border-radius: 4px; padding: 8px; min-height: 36px; cursor: pointer; transition: color .16s, background .16s; }
   .preview-tabs button:hover { background: #ffffff0c; color: var(--c-text); }
   .preview-tabs button[aria-pressed="true"]:not(.preview-pause) { background: #ffffff10; color: var(--c-lime); border-color: var(--c-line); }
-  .preview-img { display: block; height: clamp(320px, 42vh, 480px); background: #0e0d48; }
+  .preview-img { display: block; height: clamp(320px, 42vh, 480px); background: var(--c-deep); }
   .preview-img img { width: 100%; height: 100%; object-fit: contain; padding: 24px; transition: opacity .2s; }
   .preview-img .companion { display: none; }
   .preview[data-current="marugoto-fes"] .preview-img { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 24px; }
@@ -228,6 +246,27 @@ const hasContact = Boolean(email || github || x);
     .preview-img { height: 320px; }
     .preview-foot .meta { display: none; }
   }
+
+  .ascii-logo { font: 400 clamp(10px, 1.25vw, 18px)/1.2 var(--f-mono); color: var(--c-lime); margin: 0; white-space: pre; }
+  .ascii-terrain { position: absolute; z-index: -1; inset: auto -4% -2%; margin: 0; font: 400 clamp(8px, 1.4vw, 22px)/1.1 var(--f-mono); color: var(--c-sky); opacity: .18; white-space: pre; pointer-events: none; }
+  .terminal-line { color: var(--c-sky) !important; }
+  .hero { gap: 48px; }
+  .hero-text { gap: 24px; }
+  h1 { font-size: clamp(1.875rem, 3.1vw, 3rem); line-height: 1.6; }
+  .preview { border-style: dashed; background: var(--c-surface); }
+  .ascii-toolbar { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; border-bottom: 1px dashed var(--c-line); color: var(--c-sky); font-size: .75rem; gap: 12px; }
+  .view-toggle { color: var(--c-lime); background: none; border: 0; padding: 8px 0; cursor: pointer; font: 400 .75rem var(--f-jp); text-decoration: underline; text-underline-offset: 4px; }
+  .ascii-output { height: clamp(320px, 42vh, 480px); display: grid; align-items: center; justify-items: center; overflow: hidden; background: var(--c-deep); padding: 16px; }
+  .ascii-output pre { margin: 0; color: var(--c-lime); font: 400 clamp(3px, .55vw, 7px)/1.2 var(--f-mono); letter-spacing: 0; white-space: pre; }
+  .preview[data-view="ascii"] .preview-img { display: none; }
+  .preview[data-view="image"] .ascii-output { display: none; }
+  .ascii-small { color: var(--c-sky); font: 400 .875rem/1.2 var(--f-mono); margin: 32px 0; white-space: pre; }
+  .works-head h2 span { color: var(--c-sky); }
+  .work-row::after { content: '[open]'; font: 400 .6875rem var(--f-mono); color: var(--c-lime); }
+  .work-row { grid-template-columns: 160px minmax(0, 1fr) 48px; }
+  .work-row .arrow { display: none; }
+  @media (max-width: 860px) { .ascii-output pre { font-size: clamp(3px, 1vw, 7px); } .ascii-logo { font-size: 14px; } }
+  @media (max-width: 480px) { .works-head h2 span { display: none; } .work-row { grid-template-columns: 72px minmax(0,1fr) 36px; gap: 12px; } .ascii-toolbar { padding-inline: 16px; } }
 </style>
 
 <script is:inline async src="https://platform.x.com/widgets.js" charset="utf-8"></script>
@@ -243,6 +282,40 @@ const hasContact = Boolean(email || github || x);
     const pauseBtn = preview.querySelector<HTMLButtonElement>('.preview-pause');
     const q = (k: string) => preview.querySelector<HTMLElement>(`[data-p="${k}"]`)!;
     const img = q('img') as HTMLImageElement;
+    const output = preview.querySelector<HTMLElement>('[data-ascii]')!;
+    const toggle = preview.querySelector<HTMLButtonElement>('.view-toggle')!;
+    const renderAscii = () => {
+      if (!img.complete || !img.naturalWidth) return;
+      const canvas = document.createElement('canvas'); canvas.width = 120; canvas.height = 44;
+      const ctx = canvas.getContext('2d', { willReadFrequently: true }); if (!ctx) return;
+      ctx.fillStyle = '#090e19'; ctx.fillRect(0, 0, 120, 44);
+      const sources = preview.dataset.current === 'marugoto-fes' ? [...preview.querySelectorAll<HTMLImageElement>('.preview-img img')] : [img];
+      try {
+        sources.forEach((source, i) => {
+          if (!source.complete || !source.naturalWidth) return;
+          const area = 120 / sources.length, ratio = source.naturalWidth / source.naturalHeight;
+          const h = Math.min(40, (area - 6) / ratio / 2), w = h * ratio * 2;
+          ctx.drawImage(source, i * area + (area - w) / 2, (44 - h) / 2, w, h);
+        });
+        const pixels = ctx.getImageData(0, 0, 120, 44).data, chars = ' .,:;irsXA253hMHGS#9B&@';
+        let result = '';
+        for (let y = 0; y < 44; y++) {
+          for (let x = 0; x < 120; x++) {
+            const i = (y * 120 + x) * 4;
+            const light = pixels[i] * .2126 + pixels[i+1] * .7152 + pixels[i+2] * .0722;
+            result += chars[Math.min(chars.length-1, Math.floor(light / 256 * chars.length))];
+          }
+          result += '\n';
+        }
+        output.textContent = result;
+      } catch { preview.dataset.view = 'image'; toggle.hidden = true; }
+    };
+    preview.querySelectorAll('img').forEach((source) => source.addEventListener('load', renderAscii));
+    renderAscii();
+    toggle.addEventListener('click', () => {
+      const ascii = preview.dataset.view !== 'ascii'; preview.dataset.view = ascii ? 'ascii' : 'image';
+      toggle.setAttribute('aria-pressed', String(ascii)); toggle.textContent = ascii ? '実画面に切り替え' : 'ASCIIに切り替え';
+    });
     const INTERVAL = 4500;
     let current = pool.find((p) => p.title === q('title').textContent)?.id ?? pool[0]?.id;
     let userPaused = true, hold = false, timer = 0;
